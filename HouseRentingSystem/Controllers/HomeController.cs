@@ -1,4 +1,5 @@
-﻿using HouseRentingSystem.Models;
+﻿using HouseRentingSystem.Core.Models.Home;
+using HouseRentingSystem.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -15,11 +16,9 @@ namespace HouseRentingSystem.Controllers
 
         public IActionResult Index()
         {
-            //if(User.Identity != null && User.Identity.IsAuthenticated)
-            //{
-            //    return RedirectToAction("All", "House");
-            //}
-            return View();
+            var model = new IndexViewModel();
+
+            return View(model);
         }
                 
 
