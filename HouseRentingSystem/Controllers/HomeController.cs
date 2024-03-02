@@ -1,35 +1,37 @@
-﻿using HouseRentingSystem.Core.Models.Home;
+﻿using HouseRentingSystem.Core.Contracts.House;
+using HouseRentingSystem.Core.Models.Home;
 using HouseRentingSystem.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace HouseRentingSystem.Controllers
 {
-    public class HomeController : Controller
-    {
-        private readonly ILogger<HomeController> _logger;
-        private readonly IConfiguration _configuration;
+	public class HomeController : Controller
+	{
+		private readonly ILogger<HomeController> logger;
+		private readonly IHouseService houseService;
 
-        public HomeController(ILogger<HomeController> logger,
-            IConfiguration configuration)
-        {
-            _logger = logger;
-            _configuration = configuration;
-        }
+		public HomeController(
+			ILogger<HomeController> _logger,
+			IHouseService _houseService)
+		{
+			logger = _logger;
+			houseService = _houseService;
 
-        public IActionResult Index()
-        {
-            
-            var model = new IndexViewModel();
+		}
 
-             return View(model);
-        }
-                
+		public async Task<IActionResult> Index()
+		{
+			var model = await houseService.LastThreeHouses();
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-    }
+			return View(model);
+		}
+
+
+		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+		public IActionResult Error()
+		{
+			return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+		}
+	}
 }
