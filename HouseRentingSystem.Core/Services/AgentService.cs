@@ -43,6 +43,10 @@ namespace HouseRentingSystem.Core.Services
             await repository.SaveChangesAsync();
         }
 
-        
+        public async Task<int?> GetAgentIdAsync(string userId)
+        {
+            return (await repository.AllReadOnly<Agent>()
+                .FirstOrDefaultAsync(a => a.UserId == userId))?.Id;  
+        }
     }
 }
