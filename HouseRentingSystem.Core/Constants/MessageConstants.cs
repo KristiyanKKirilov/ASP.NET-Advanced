@@ -9,5 +9,7 @@
         public const string PhoneExists = "Phone number already exists. Enter another one!";
 
         public const string UserRentsExist = "You should have no rents to become an agent";
+
+        public const string PriceRangeError = "{0} must be a positive number and less than {2} leva.";
     }
 }
