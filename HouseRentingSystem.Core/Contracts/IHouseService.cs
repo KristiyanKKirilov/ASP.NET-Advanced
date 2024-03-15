@@ -37,5 +37,9 @@ namespace HouseRentingSystem.Core.Contracts
 
         Task<HouseFormModel?> GetHouseFormByIdAsync(int id);
 
+        Task Delete(int houseId);  
+
+
+
     }
 }
