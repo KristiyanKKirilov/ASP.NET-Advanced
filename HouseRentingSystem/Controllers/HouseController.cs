@@ -109,15 +109,49 @@ namespace HouseRentingSystem.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var model = new HouseFormModel();
+            if(!await houseService.ExistsAsync(id))
+            {
+                return BadRequest();
+            }
+            string userId = User.Id();
 
+            if(!await houseService.HasAgentWithIdAsync(id, userId))
+            {
+                return Unauthorized();
+            }
+
+            var model = await houseService.GetHouseFormByIdAsync(id);
+            
             return View(model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(HouseFormModel model, int id)
+        public async Task<IActionResult> Edit(int id, HouseFormModel model)
         {
-            return RedirectToAction(nameof(Details), new { id = 1 });
+            if (!await houseService.ExistsAsync(id))
+            {
+                return BadRequest();
+            }
+            string userId = User.Id();
+
+            if (!await houseService.HasAgentWithIdAsync(id, userId))
+            {
+                return Unauthorized();
+            }
+
+            if (await houseService.CategoryExistsAsync(model.CategoryId) == false)
+            {
+                ModelState.AddModelError(nameof(model.CategoryId), "Category does not exist");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                model.Categories = await houseService.AllCategoriesAsync();
+                return View(model);
+            }
+
+            await houseService.EditAsync(id, model);
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         [HttpGet]
