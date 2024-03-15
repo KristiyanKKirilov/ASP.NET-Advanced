@@ -51,15 +51,7 @@ namespace HouseRentingSystem.Core.Services
             var houses = await housesToShow
                 .Skip((currentPage - 1) * housesPerPage)
                 .Take(housesPerPage)
-                .Select(h => new HouseServiceModel()
-                {
-                    Id = h.Id,
-                    Address = h.Address,
-                    ImageUrl = h.ImageUrl,
-                    IsRented = h.RenterId != null,
-                    PricePerMonth = h.PricePerMonth,
-                    Title = h.Title
-                })
+                .ProjectToHouseServiceModel()
                 .ToListAsync();
 
             int totalHouses = await housesToShow.CountAsync();
@@ -90,6 +82,24 @@ namespace HouseRentingSystem.Core.Services
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<HouseServiceModel>> AllHousesByAgentIdAsync(int agentId)
+        {
+            return await repository
+                .AllReadOnly<House>()
+                .Where(h => h.AgentId == agentId)
+                .ProjectToHouseServiceModel()
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<HouseServiceModel>> AllHousesByUserIdAsync(string userId)
+        {
+            return await repository
+                .AllReadOnly<House>()
+                .Where(h => h.RenterId == userId)
+                .ProjectToHouseServiceModel()
+                .ToListAsync(); 
+        }
+
         public async Task<bool> CategoryExistsAsync(int categoryId)
         {
             return await repository.AllReadOnly<Category>()
@@ -99,7 +109,7 @@ namespace HouseRentingSystem.Core.Services
         public async Task<int> CreateAsync(HouseFormModel model, int agentId)
         {
             var house = new House()
-            {
+            {                
                 Address = model.Address,
                 AgentId = agentId,
                 CategoryId = model.CategoryId,
@@ -107,6 +117,7 @@ namespace HouseRentingSystem.Core.Services
                 ImageUrl = model.ImageUrl,
                 PricePerMonth = model.PricePerMonth,
                 Title = model.Title,
+                
             };
 
             await repository.AddAsync(house);
@@ -129,5 +140,7 @@ namespace HouseRentingSystem.Core.Services
                 })
                 .ToListAsync();
         }
+
+       
     }
 }
