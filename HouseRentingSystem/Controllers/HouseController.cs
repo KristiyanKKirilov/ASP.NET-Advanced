@@ -196,20 +196,58 @@ namespace HouseRentingSystem.Controllers
                 return Unauthorized();
             }
 
-            await houseService.Delete(model.Id);
+            await houseService.DeleteAsync(model.Id);
 
             return RedirectToAction(nameof(All));
         }
 
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Rent(int id)
         {
+            if(!await houseService.ExistsAsync(id))
+            {
+                return BadRequest();
+            }
+
+            string userId = User.Id();
+
+            if(await agentService.ExistsByIdAsync(userId))
+            {
+                return Unauthorized();
+            }
+
+            if(await houseService.IsRentedAsync(id))
+            {
+                return BadRequest();
+            }
+
+            if(await houseService.HasAgentWithIdAsync(id, userId))
+            {
+                return BadRequest();
+            }
+            
+
+            await houseService.Rent(id, userId);
+
             return RedirectToAction(nameof(Mine));
         }
 
         [HttpPost]
         public async Task<IActionResult> Leave(int id)
         {
+            if(!await houseService.ExistsAsync(id) || !await houseService.IsRentedAsync(id))
+            {
+                return BadRequest();
+            }
+
+            if(!await houseService.IsRentedByUserWithIdAsync(id, User.Id()))
+            {
+                return Unauthorized();
+            }
+
+            await houseService.Leave(id);
+
             return RedirectToAction(nameof(Mine));
         }
     }
