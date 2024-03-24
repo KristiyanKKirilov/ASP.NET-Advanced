@@ -173,6 +173,7 @@ namespace HouseRentingSystem.Controllers
 
             var model = new HouseDetailsViewModel()
             {
+                Id = house.Id,
                 Title = house.Title,
                 Address = house.Address,
                 ImageUrl = house.ImageUrl
