@@ -1,5 +1,6 @@
 ﻿using HouseRentingSystem.Attributes;
 using HouseRentingSystem.Core.Contracts;
+using HouseRentingSystem.Core.Exceptions;
 using HouseRentingSystem.Core.Models.House;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,12 +12,15 @@ namespace HouseRentingSystem.Controllers
     {
         private readonly IHouseService houseService;
         private readonly IAgentService agentService;
+        private readonly ILogger logger;
 
         public HouseController(IHouseService _houseService,
-            IAgentService _agentService)
+            IAgentService _agentService,
+            ILogger<HouseController> _logger)
         {
             houseService = _houseService;
             agentService = _agentService;
+            logger = _logger;
         }
 
         [AllowAnonymous]
@@ -177,7 +181,7 @@ namespace HouseRentingSystem.Controllers
                 Title = house.Title,
                 Address = house.Address,
                 ImageUrl = house.ImageUrl
-            };
+            };   
 
             return View(model);
         }
@@ -229,7 +233,7 @@ namespace HouseRentingSystem.Controllers
             }
             
 
-            await houseService.Rent(id, userId);
+            await houseService.RentAsync(id, userId);
 
             return RedirectToAction(nameof(Mine));
         }
@@ -242,12 +246,18 @@ namespace HouseRentingSystem.Controllers
                 return BadRequest();
             }
 
-            if(!await houseService.IsRentedByUserWithIdAsync(id, User.Id()))
+            string userId = User.Id();
+            try
             {
+                await houseService.LeaveAsync(id, userId);
+            }
+            catch (UnauthorizedActionException uae)
+            {
+                logger.LogError(uae, "HouseController/Leave");
+                 
                 return Unauthorized();
             }
-
-            await houseService.Leave(id);
+            
 
             return RedirectToAction(nameof(Mine));
         }
