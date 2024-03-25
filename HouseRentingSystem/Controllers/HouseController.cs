@@ -1,6 +1,7 @@
 ﻿using HouseRentingSystem.Attributes;
 using HouseRentingSystem.Core.Contracts;
 using HouseRentingSystem.Core.Exceptions;
+using HouseRentingSystem.Core.Extensions;
 using HouseRentingSystem.Core.Models.House;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -62,15 +63,21 @@ namespace HouseRentingSystem.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Details(int id)
+        public async Task<IActionResult> Details(int id, string information)
         {
             if(!await houseService.ExistsAsync(id))
             {
                 return BadRequest();
             }
 
-
+            
             var model = await houseService.HouseDetailsByIdAsync(id);
+
+
+            if (information != model.GetInformation())
+            {
+                return BadRequest();
+            }
 
             return View(model);
         }
@@ -107,7 +114,7 @@ namespace HouseRentingSystem.Controllers
 
             int newHouseId = await houseService.CreateAsync(model, agentId ?? 0);
             
-            return RedirectToAction(nameof(Details), new { id =  newHouseId});
+            return RedirectToAction(nameof(Details), new { id =  newHouseId, information = model.GetInformation() });
         }
 
         [HttpGet]
@@ -155,7 +162,7 @@ namespace HouseRentingSystem.Controllers
             }
 
             await houseService.EditAsync(id, model);
-            return RedirectToAction(nameof(Details), new { id });
+            return RedirectToAction(nameof(Details), new { id, information = model.GetInformation() });
         }
 
         [HttpGet]
@@ -235,7 +242,7 @@ namespace HouseRentingSystem.Controllers
 
             await houseService.RentAsync(id, userId);
 
-            return RedirectToAction(nameof(Mine));
+            return RedirectToAction(nameof(All));
         }
 
         [HttpPost]
@@ -259,7 +266,7 @@ namespace HouseRentingSystem.Controllers
             }
             
 
-            return RedirectToAction(nameof(Mine));
+            return RedirectToAction(nameof(All));
         }
     }
 }
